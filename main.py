@@ -239,6 +239,7 @@ def test_model(model, args, testset, pin_memory):
         for data in testset:
             data = data.to(args.device, non_blocking=pin_memory)
             pred = model(data, args.adj)
+            print(pred)
             loss += func.mse_loss(data.y, pred, reduction="mean")
             pred, _ = to_dense_batch(pred, batch=data.batch)
             data.y, _ = to_dense_batch(data.y, batch=data.batch)
@@ -275,7 +276,7 @@ def main(args):
 
     for year in range(args.begin_year, args.end_year+1):
         # Load Data 
-        graph = nx.from_numpy_matrix(np.load(osp.join(args.graph_path, str(year)+"_adj.npz"))["x"])
+        graph = nx.from_numpy_array(np.load(osp.join(args.graph_path, str(year)+"_adj.npz"))["x"])
         vars(args)["graph_size"] = graph.number_of_nodes()
         vars(args)["year"] = year
         inputs = generate_samples(31, osp.join(args.save_data_path, str(year)+'_30day'), np.load(osp.join(args.raw_data_path, str(year)+".npz"))["x"], graph, val_test_mix=True) \
@@ -311,8 +312,8 @@ def main(args):
                 args.logger.info("[*] detect strategy {}".format(args.detect_strategy))
                 pre_data = np.load(osp.join(args.raw_data_path, str(year-1)+".npz"))["x"]
                 cur_data = np.load(osp.join(args.raw_data_path, str(year)+".npz"))["x"]
-                pre_graph = np.array(list(nx.from_numpy_matrix(np.load(osp.join(args.graph_path, str(year-1)+"_adj.npz"))["x"]).edges)).T
-                cur_graph = np.array(list(nx.from_numpy_matrix(np.load(osp.join(args.graph_path, str(year)+"_adj.npz"))["x"]).edges)).T
+                pre_graph = np.array(list(nx.from_numpy_array(np.load(osp.join(args.graph_path, str(year-1)+"_adj.npz"))["x"]).edges)).T
+                cur_graph = np.array(list(nx.from_numpy_array(np.load(osp.join(args.graph_path, str(year)+"_adj.npz"))["x"]).edges)).T
                 # 20% of current graph size will be sampled
                 vars(args)["topk"] = int(0.01*args.graph_size) 
                 influence_node_list = detect.influence_node_selection(model, args, pre_data, cur_data, pre_graph, cur_graph)
@@ -330,8 +331,8 @@ def main(args):
                 node_list = random.sample(node_list, int(0.1*args.graph_size))
             
             # Obtain subgraph of node list
-            cur_graph = torch.LongTensor(np.array(list(nx.from_numpy_matrix(np.load(osp.join(args.graph_path, str(year)+"_adj.npz"))["x"]).edges)).T)
-            edge_list = list(nx.from_numpy_matrix(np.load(osp.join(args.graph_path, str(year)+"_adj.npz"))["x"]).edges)
+            cur_graph = torch.LongTensor(np.array(list(nx.from_numpy_array(np.load(osp.join(args.graph_path, str(year)+"_adj.npz"))["x"]).edges)).T)
+            edge_list = list(nx.from_numpy_array(np.load(osp.join(args.graph_path, str(year)+"_adj.npz"))["x"]).edges)
             graph_node_from_edge = set()
             for (u,v) in edge_list:
                 graph_node_from_edge.add(u)
