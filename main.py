@@ -239,7 +239,6 @@ def test_model(model, args, testset, pin_memory):
         for data in testset:
             data = data.to(args.device, non_blocking=pin_memory)
             pred = model(data, args.adj)
-            print(pred)
             loss += func.mse_loss(data.y, pred, reduction="mean")
             pred, _ = to_dense_batch(pred, batch=data.batch)
             data.y, _ = to_dense_batch(data.y, batch=data.batch)
