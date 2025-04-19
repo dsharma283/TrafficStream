@@ -57,6 +57,7 @@ def main():
     #print(aggregated_plot_data.items())
     methods = ['expansible', 'static', 'retrained', 'trafficStream']
     horizons = sorted(agg_pdata['mae'].keys())
+    years = [x for x in range(2011, 2018)]
 
     # Create subplots for each metric
     fig, axs = plt.subplots(1, 3, figsize=(18, 5))
@@ -74,9 +75,24 @@ def main():
             ax.grid(True)
 
     plt.tight_layout()
-    ofile = os.path.join(args.plots_path, f'prediction-plot-{args.loss_name}.jpg')
+    ofile = os.path.join(args.plots_path, f'prediction-plot-{args.loss_name}-mean.jpg')
     plt.savefig(ofile)
-    
+
+    for tstamp in horizons:
+        fig, axs = plt.subplots(1, 3, figsize=(18, 5))
+        for i, metric in enumerate(metrics):
+            ax = axs[i]
+            for method in methods:
+                y_values = agg_pdata[metric][tstamp][method][0]
+                ax.plot(years, y_values, marker='o', label=f'{method}-{tstamp}')
+                ax.set_title(f'{metric.upper()}-{args.loss_name.upper()}')
+                ax.set_xlabel(f'Years')
+                ax.set_ylabel(metric)
+                ax.legend()
+                ax.grid(True)
+        plt.tight_layout()
+        ofile = os.path.join(args.plots_path, f'prediction-plot-{args.loss_name}-yoy-{tstamp}.jpg')
+        plt.savefig(ofile)
 
 def get_files_list(args):
     #print(f'getfiles args.model_dirs = {args.model_dirs}')
